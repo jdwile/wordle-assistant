@@ -3,6 +3,7 @@ from nltk.corpus import words
 green_letters = {}
 yellow_letters = {}
 gray_letters = set()
+global_letter_scores = {}
 letter_scores = {}
 
 possible_words = [word.lower() for word in words.words() if len(word) == 5]
@@ -22,7 +23,7 @@ def is_valid(guess):
         return False
 
 def score_word(word):
-    return sum([letter_scores[c] for c in set(word)])
+    return (sum([global_letter_scores[c] for c in set(word)]) + sum([letter_scores[c] for c in set(word)]))/2
 
 def weight_possible_words():
     for l in "abcdefghijklmnopqrstuvwxyz":
@@ -34,7 +35,10 @@ def weight_possible_words():
 
 for _ in range(6):
     weight_possible_words()
-    print(f"{len(possible_words)} possible words")    
+    if len(global_letter_scores) == 0:
+        global_letter_scores = letter_scores.copy()
+
+    print(f"\n{len(possible_words)} possible words")    
     print(f"Green letters: {green_letters}")
     print(f"Yellow letters: {yellow_letters}")
     print(f"Gray letters: {gray_letters}")
@@ -42,9 +46,9 @@ for _ in range(6):
     possible_words.sort(key=lambda w: score_word(w), reverse=True)
 
     if len(possible_words) < 25:
-        print(possible_words)
+        print(f"Possible words: {possible_words}")
 
-    print(f"Try picking {possible_words[0]} ({score_word(possible_words[0])})")
+    print(f"Some suggestions... {possible_words[0:5]})")
     guess = input("Guess:")
 
     while not is_valid(guess):

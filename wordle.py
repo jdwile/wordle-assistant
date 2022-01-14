@@ -3,9 +3,9 @@ from nltk.corpus import words
 green_letters = {}
 yellow_letters = {}
 gray_letters = set()
-letter_scores = {l: 0 for l in "abcdefghijklmnopqrstuvwxyz"}
+letter_scores = {}
 
-possible_words = []
+possible_words = [word.lower() for word in words.words() if len(word) == 5]
 
 def is_valid(guess):
     try:
@@ -24,24 +24,25 @@ def is_valid(guess):
 def score_word(word):
     return sum([letter_scores[c] for c in set(word)])
 
-
-for word in words.words():
-    if len(word) == 5:
-        lower_word = word.lower()
-        possible_words.append(lower_word)
-        for c in lower_word:
+def weight_possible_words():
+    for l in "abcdefghijklmnopqrstuvwxyz":
+        letter_scores[l] = 0
+    for word in possible_words:
+        for c in word:
             letter_scores[c] += 1
+    print(letter_scores)
 
 for _ in range(6):
+    weight_possible_words()
     print(f"{len(possible_words)} possible words")    
     print(f"Green letters: {green_letters}")
     print(f"Yellow letters: {yellow_letters}")
     print(f"Gray letters: {gray_letters}")
 
+    possible_words.sort(key=lambda w: score_word(w), reverse=True)
+
     if len(possible_words) < 25:
         print(possible_words)
-
-    possible_words.sort(key=lambda w: score_word(w), reverse=True)
 
     print(f"Try picking {possible_words[0]} ({score_word(possible_words[0])})")
     guess = input("Guess:")

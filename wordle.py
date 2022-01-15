@@ -1,29 +1,34 @@
+from turtle import pos
 from nltk.corpus import words
+import re
 
 green_letters = {}
 yellow_letters = {}
 gray_letters = set()
 global_letter_scores = {}
 letter_scores = {}
+filter_regex_list = ["\w","\w","\w","\w","\w"]
 
 possible_words = [word.lower() for word in words.words() if len(word) == 5]
 
 def is_valid(guess):
     try:
         assert len(guess) == 5
-        assert all([guess[i] == l for l, i in green_letters.items()])
-        assert all(
-            [
-                l in guess and all([not guess[i] == l for i in indices])
-                for l, indices in yellow_letters.items()
-            ]
-        )
+        filter_regex = re.compile(''.join(filter_regex_list))
+        assert filter_regex.match(guess)
+        assert all([l in guess for l in yellow_letters.keys()])
         return True
     except (AssertionError):
         return False
 
 def score_word(word):
     return (sum([global_letter_scores[c] for c in set(word)]) + sum([letter_scores[c] for c in set(word)]))/2
+
+def add_to_ignore_filter(index, letter):
+    if filter_regex_list[index] == "\w":
+        filter_regex_list[index] = f"[^{letter}]"
+    elif filter_regex_list[index][0] == "[" and letter not in filter_regex_list[index]:
+        filter_regex_list[index] = f"{filter_regex_list[index][0:len(filter_regex_list[index])-1]}{letter}]"
 
 def weight_possible_words():
     for l in "abcdefghijklmnopqrstuvwxyz":
@@ -42,6 +47,7 @@ for _ in range(6):
     print(f"Green letters: {green_letters}")
     print(f"Yellow letters: {yellow_letters}")
     print(f"Gray letters: {gray_letters}")
+    print(f"Filter regex: /{''.join(filter_regex_list)}/")
 
     possible_words.sort(key=lambda w: score_word(w), reverse=True)
 
@@ -72,14 +78,19 @@ for _ in range(6):
             case " ":
                 gray_letters.add(guess[i])
 
+
     for l, i in green_letters.items():
-        possible_words = list(filter(lambda w: w[i] == l, possible_words))
+        filter_regex_list[i] = l
+
     for l, indices in yellow_letters.items():
-        possible_words = list(filter(lambda w: l in w, possible_words))
         for i in indices:
-            possible_words = list(filter(lambda w: not w[i] == l, possible_words))
+            add_to_ignore_filter(i, l)
+
     for l in gray_letters:
-        if l in green_letters.keys() or l in yellow_letters.keys(): 
-            continue # TODO: gray hints if a letter is in one of the lists
-        possible_words = list(filter(lambda w: l not in w, possible_words))
+        for i in range(len(filter_regex_list)):
+            add_to_ignore_filter(i, l)
+
+    filter_regex = re.compile(''.join(filter_regex_list))
+    possible_words = list(filter(filter_regex.match, possible_words))
+    possible_words = list(filter(lambda w: all([l in w for l in yellow_letters]), possible_words))
             

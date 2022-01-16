@@ -7,7 +7,6 @@ through a combination of heuristics.
 
 # Todos
 
-- Use a built up regex to filter out possible words
 - Position-based weightings (vowels come after consonants, average position in 5
   letter word, etc)
 - Weight previous Wordle solutions lower

@@ -11,18 +11,22 @@ filter_regex_list = ["\w","\w","\w","\w","\w"]
 
 possible_words = [word.lower() for word in words.words() if len(word) == 5]
 
-def is_valid(guess):
+def is_valid(guess, should_find_solution):
     try:
         assert len(guess) == 5
-        filter_regex = re.compile(''.join(filter_regex_list))
-        assert filter_regex.match(guess)
-        assert all([l in guess for l in yellow_letters.keys()])
+        if should_find_solution:
+            filter_regex = re.compile(''.join(filter_regex_list))
+            assert filter_regex.match(guess)
+            assert all([l in guess for l in yellow_letters.keys()])
         return True
     except (AssertionError):
         return False
 
-def score_word(word):
-    return (sum([global_letter_scores[c] for c in set(word)]) + sum([letter_scores[c] for c in set(word)]))/2
+def score_word(word, should_find_solution):
+    scorable_letters = set(word)
+    if not should_find_solution:
+        scorable_letters = [l for l in scorable_letters if l not in green_letters.keys() and l not in yellow_letters.keys()]
+    return (sum([global_letter_scores[c] for c in scorable_letters]) + sum([letter_scores[c] for c in scorable_letters])) / 2
 
 def add_to_ignore_filter(index, letter):
     if filter_regex_list[index] == "\w":
@@ -49,7 +53,11 @@ for _ in range(6):
     print(f"Gray letters: {gray_letters}")
     print(f"Filter regex: /{''.join(filter_regex_list)}/")
 
-    possible_words.sort(key=lambda w: score_word(w), reverse=True)
+    found_letters = len(green_letters.keys()) + len(yellow_letters.keys())
+
+    print(f"Found letters: {found_letters}")
+
+    possible_words.sort(key=lambda w: score_word(w, found_letters >= 3), reverse=True)
 
     if len(possible_words) < 25:
         print(f"Possible words: {possible_words}")
@@ -57,7 +65,7 @@ for _ in range(6):
     print(f"Some suggestions... {possible_words[0:5]})")
     guess = input("Guess:")
 
-    while not is_valid(guess):
+    while not is_valid(guess, found_letters >= 3):
         guess = input("Invalid guess, try again:")
 
     colors = input("What colors did we get? (Green = 'g', Yellow = 'y', gray = ' '):")

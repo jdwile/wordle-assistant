@@ -7,9 +7,5 @@ through a combination of heuristics.
 
 # Todos
 
-- Position-based weightings (vowels come after consonants, average position in 5
-  letter word, etc)
 - Weight previous Wordle solutions lower
-- Keep list of "unknown words" that Wordle doesn't accept (to filter out
-  `nltk`'s list of words)
 - Maybe make some sort of UI or something

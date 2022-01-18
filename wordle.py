@@ -1,4 +1,3 @@
-from turtle import pos
 import re
 import csw19
 
@@ -35,14 +34,17 @@ def score_word(word, should_find_solution, dbg = False):
     local_letter_weighting = sum([letter_scores[c] for c in scorable_letters]) / BEST_POSSIBLE_WORD_SCORE
     global_lexical_weighting = sum([2 - abs(global_lexical_positions[c] - i) for c, i in zip(word, range(len(word)))]) / (5 * 2)
     local_lexical_weighting = sum([2 - abs(lexical_positions[c] - i) for c, i in zip(word, range(len(word)))]) / (5 * 2)
+    coverage_score = len(set(word)) / 5
+    total_score = sum([global_letter_weighting, local_letter_weighting, global_lexical_weighting, local_lexical_weighting, coverage_score]) / 5
     if (dbg):
         print(f"\nScoring {word}")
         print(f"Global Letter Weighting: {global_letter_weighting}")
         print(f"Local Letter Weighting: {local_letter_weighting}")
         print(f"Global Lexical Weighting: {global_lexical_weighting}")
         print(f"Local Lexical Weighting: {local_lexical_weighting}")
-        print(f"Total Score: {(global_letter_weighting + local_letter_weighting + global_lexical_weighting + local_lexical_weighting) / 4}")
-    return (global_letter_weighting + local_letter_weighting + global_lexical_weighting + local_lexical_weighting) / 4
+        print(f"Coverage Score: {coverage_score}")
+        print(f"Total Score: {total_score}")
+    return total_score
 
 def add_to_ignore_filter(index, letter):
     if filter_regex_list[index] == "\w":
@@ -113,7 +115,9 @@ for _ in range(6):
     for i in range(len(colors)):
         match colors[i]:
             case "g":
-                green_letters[guess[i]] = i # TODO: multiple identical green letters (e.g. "pills")
+                if guess[i] in green_letters.keys():
+                    green_letters[guess[i]].append(i)
+                green_letters[guess[i]] = [i]
             case "y":
                 if guess[i] in yellow_letters.keys():
                     yellow_letters[guess[i]].append(i)
@@ -123,8 +127,9 @@ for _ in range(6):
                 gray_letters.add(guess[i])
 
 
-    for l, i in green_letters.items():
-        filter_regex_list[i] = l
+    for l, indices in green_letters.items():
+        for i in indices:
+            filter_regex_list[i] = l
 
     for l, indices in yellow_letters.items():
         for i in indices:

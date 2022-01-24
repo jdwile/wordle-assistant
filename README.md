@@ -8,4 +8,5 @@ through a combination of heuristics.
 # Todos
 
 - Weight previous Wordle solutions lower
+- Add weightings for 2-letter combinations ("oi", "ns", etc)
 - Maybe make some sort of UI or something
